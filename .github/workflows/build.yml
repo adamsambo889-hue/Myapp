@@ -23,16 +23,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           
-      - name: Install dependencies
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        
+      - name: Accept licenses and install tools
         run: |
-          sudo apt update
-          sudo apt install -y python3-pip python3-setuptools python3-venv git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          yes | sdkmanager --licenses || true
+          sdkmanager --install "build-tools;34.0.0" "platform-tools" "platforms;android-33" "ndk;25.1.8937393" || true
+          sdkmanager --install "build-tools;36.0.0" || true
+          
+      - name: Install Python deps
+        run: |
           pip install --upgrade pip==24.0
-          pip install buildozer cython==0.29.33
+          pip install buildozer Cython==0.29.33
           
       - name: Build APK
         run: |
-          yes | sdkmanager --licenses || true
           buildozer android debug
           
       - name: Upload APK
